@@ -115,6 +115,28 @@
 }
 
 /* ------------------------------------------------------------------
+   Title screen — the hex/ring core behind the recall-events counter.
+   ------------------------------------------------------------------ */
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes spin-reverse {
+  to {
+    transform: rotate(-360deg);
+  }
+}
+
+.ring-spin {
+  animation: spin 22s linear infinite;
+}
+.ring-spin-reverse {
+  animation: spin-reverse 34s linear infinite;
+}
+
+/* ------------------------------------------------------------------
    Review screen feedback — REJECT jolt/alarm, chain pops, calm-mode edge
    glow, the hazard bar, and the CONNECTION LOST overlay.
    ------------------------------------------------------------------ */
@@ -327,6 +349,8 @@
   .blink,
   .breathe,
   .sweep,
+  .ring-spin,
+  .ring-spin-reverse,
   .jolt,
   .alarm-flash,
   .pop-rise,

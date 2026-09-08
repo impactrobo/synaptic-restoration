@@ -55,6 +55,32 @@ export async function fetchRecentRatings(
   return (data ?? []).map((row) => row.rating)
 }
 
+/** TOTAL RECALL EVENTS on the title screen — every rating this operator has ever logged. */
+export async function countTotalReviews(): Promise<number> {
+  const { count, error } = await supabase
+    .from('review_logs')
+    .select('id', { count: 'exact', head: true })
+
+  if (error) throw error
+  return count ?? 0
+}
+
+/**
+ * `reviewed_at` timestamps, most recent first, for the STREAK readout's
+ * consecutive-day count (see `src/lib/streak.ts`). Capped well past a year
+ * of daily reviews so the query stays cheap.
+ */
+export async function fetchReviewDays(limit = 400): Promise<string[]> {
+  const { data, error } = await supabase
+    .from('review_logs')
+    .select('reviewed_at')
+    .order('reviewed_at', { ascending: false })
+    .limit(limit)
+
+  if (error) throw error
+  return (data ?? []).map((row) => row.reviewed_at)
+}
+
 /** The QUEUE readout — how many cards are due, without fetching them. */
 export async function countDueCards({
   deckId,
