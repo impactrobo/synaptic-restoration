@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import AuthScreen from './components/AuthScreen'
+import ReviewScreen from './components/ReviewScreen'
 import { useSession } from './hooks/useSession'
 import { countDueCards } from './lib/reviews'
 import { supabase } from './lib/supabase'
@@ -15,7 +16,7 @@ function Booting() {
   )
 }
 
-/** QUEUE readout — first live read through RLS, and a smoke test for the schema. */
+/** QUEUE readout on the home shell — also doubles as a smoke test for the schema. */
 function Queue() {
   const [state, setState] = useState<
     { kind: 'loading' } | { kind: 'ok'; due: number } | { kind: 'err'; message: string }
@@ -47,13 +48,14 @@ function Queue() {
   )
 }
 
-export default function App() {
-  const { session, loading, urlError } = useSession()
+/**
+ * Placeholder home shell. The real title screen (build step 5) ports the
+ * hex-ring prototype from reference/srs-title-screen.jsx — this is just
+ * enough of an entry point for JACK IN to lead somewhere real.
+ */
+function Home({ onJackIn }: { onJackIn: () => void }) {
+  const { session } = useSession()
 
-  if (loading) return <Booting />
-  if (!session) return <AuthScreen urlError={urlError} />
-
-  // Placeholder shell — the home/title screen and review screen land here next.
   return (
     <div className="relative min-h-dvh overflow-hidden bg-void px-4 py-5">
       <div className="gridfield" />
@@ -70,10 +72,10 @@ export default function App() {
         <div className="mt-8 border border-steel border-l-[3px] border-l-acid bg-panel p-4">
           <div className="text-[9px] tracking-[0.3em] text-acid">OPERATOR ONLINE</div>
           <div className="mt-2 break-all text-sm tracking-[0.08em] text-bone">
-            {session.user.email ?? session.user.id}
+            {session?.user.email ?? session?.user.id}
           </div>
           <div className="mt-3 text-[10px] leading-relaxed tracking-[0.12em] text-dim">
-            AUTH LAYER ACTIVE. SCHEDULER ONLINE. SYNC SCREEN PENDING.
+            AUTH LAYER ACTIVE. SCHEDULER ONLINE.
           </div>
         </div>
 
@@ -81,8 +83,17 @@ export default function App() {
 
         <button
           type="button"
+          onClick={onJackIn}
+          className="notch mt-4 flex w-full items-center justify-between border-2 border-cyan bg-cyan/10 px-4 py-3 transition-transform duration-100 active:translate-x-1"
+        >
+          <span className="text-sm font-bold tracking-[0.22em] text-bone">JACK IN</span>
+          <span className="text-[9px] tracking-[0.15em] text-cyan">START SESSION</span>
+        </button>
+
+        <button
+          type="button"
           onClick={() => supabase.auth.signOut()}
-          className="notch mt-4 flex w-full items-center justify-between border-2 border-steel bg-plate px-4 py-3 transition-transform duration-100 active:translate-x-1"
+          className="notch mt-2.5 flex w-full items-center justify-between border-2 border-steel bg-plate px-4 py-3 transition-transform duration-100 active:translate-x-1"
         >
           <span className="text-sm font-bold tracking-[0.22em] text-dim">DISCONNECT</span>
           <span className="text-[9px] tracking-[0.15em] text-steel">SIGN OUT</span>
@@ -90,4 +101,15 @@ export default function App() {
       </div>
     </div>
   )
+}
+
+export default function App() {
+  const { session, loading, urlError } = useSession()
+  const [reviewing, setReviewing] = useState(false)
+
+  if (loading) return <Booting />
+  if (!session) return <AuthScreen urlError={urlError} />
+  if (reviewing) return <ReviewScreen onExit={() => setReviewing(false)} />
+
+  return <Home onJackIn={() => setReviewing(true)} />
 }

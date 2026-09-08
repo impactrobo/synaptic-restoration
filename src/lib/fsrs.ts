@@ -1,6 +1,7 @@
 import {
   createEmptyCard,
   fsrs,
+  FSRSVersion,
   generatorParameters,
   Rating,
   State,
@@ -10,7 +11,7 @@ import {
 } from 'ts-fsrs'
 import type { CardRow, CardState, ReviewRating } from './database.types'
 
-export { Rating, State }
+export { FSRSVersion, Rating, State }
 export type { Grade }
 
 /**

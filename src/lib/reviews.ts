@@ -1,27 +1,32 @@
 import { supabase } from './supabase'
-import type { CardInsert, CardRow } from './database.types'
+import type { CardInsert, CardRow, ReviewRating, TemplateRow } from './database.types'
 import { gradeCard, newCardScheduling, type Grade, type Scheduling } from './fsrs'
+import { INTEGRITY_WINDOW } from './integrity'
 
 export type DueQuery = {
   /**
-   * Restrict to one deck. Left undefined, the queue spans every deck — the
-   * "one deck at a time vs. everything due" question is still open, so both
-   * shapes stay available to the caller.
+   * Restrict to one deck. Left undefined, the queue spans every deck — per
+   * CLAUDE.md, JACK IN starts a session across every due card, not one deck
+   * at a time. Kept optional so per-deck study can be added later without
+   * changing this query's shape.
    */
   deckId?: string
   limit?: number
   now?: Date
 }
 
+/** A due card plus enough of its template to know how to render it. */
+export type DueCard = CardRow & { templates: Pick<TemplateRow, 'name'> | null }
+
 /** Cards whose `due` has passed, soonest first. New cards default to due now. */
 export async function fetchDueCards({
   deckId,
   limit = 100,
   now = new Date(),
-}: DueQuery = {}): Promise<CardRow[]> {
+}: DueQuery = {}): Promise<DueCard[]> {
   let query = supabase
     .from('cards')
-    .select('*')
+    .select('*, templates(name)')
     .lte('due', now.toISOString())
     .order('due', { ascending: true })
     .limit(limit)
@@ -31,6 +36,23 @@ export async function fetchDueCards({
   const { data, error } = await query
   if (error) throw error
   return data ?? []
+}
+
+/**
+ * The most recent ratings, newest first — the window the INTEG readout is
+ * computed from (see `src/lib/integrity.ts`).
+ */
+export async function fetchRecentRatings(
+  limit: number = INTEGRITY_WINDOW,
+): Promise<ReviewRating[]> {
+  const { data, error } = await supabase
+    .from('review_logs')
+    .select('rating')
+    .order('reviewed_at', { ascending: false })
+    .limit(limit)
+
+  if (error) throw error
+  return (data ?? []).map((row) => row.rating)
 }
 
 /** The QUEUE readout — how many cards are due, without fetching them. */

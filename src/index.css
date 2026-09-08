@@ -114,6 +114,133 @@
   }
 }
 
+/* ------------------------------------------------------------------
+   Review screen feedback — REJECT jolt/alarm, chain pops, calm-mode edge
+   glow, the hazard bar, and the CONNECTION LOST overlay.
+   ------------------------------------------------------------------ */
+@keyframes jolt {
+  0%,
+  100% {
+    transform: translateX(0);
+  }
+  15% {
+    transform: translateX(-6px);
+  }
+  35% {
+    transform: translateX(5px);
+  }
+  55% {
+    transform: translateX(-3px);
+  }
+  75% {
+    transform: translateX(2px);
+  }
+}
+
+@keyframes alarm-flash {
+  0%,
+  100% {
+    opacity: 0;
+  }
+  20%,
+  60% {
+    opacity: 0.45;
+  }
+}
+
+@keyframes rise {
+  0% {
+    opacity: 0;
+    transform: translate(-50%, 12px);
+  }
+  25% {
+    opacity: 1;
+    transform: translate(-50%, -4px);
+  }
+  100% {
+    opacity: 0;
+    transform: translate(-50%, -44px);
+  }
+}
+
+@keyframes edge-glow {
+  0% {
+    opacity: 0;
+  }
+  22% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+  }
+}
+
+@keyframes crit-flash {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.15;
+  }
+}
+
+@keyframes lost-in {
+  0% {
+    opacity: 0;
+  }
+  8% {
+    opacity: 1;
+  }
+  82% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+  }
+}
+
+@keyframes glitch {
+  0%,
+  100% {
+    transform: translate(0, 0);
+  }
+  20% {
+    transform: translate(-3px, 1px);
+  }
+  40% {
+    transform: translate(3px, -1px);
+  }
+  60% {
+    transform: translate(-2px, -2px);
+  }
+  80% {
+    transform: translate(2px, 2px);
+  }
+}
+
+@keyframes lost-bars {
+  to {
+    background-position: 0 18px;
+  }
+}
+
+@keyframes hazard-pulse {
+  0%,
+  100% {
+    opacity: 0.4;
+  }
+  50% {
+    opacity: 0.85;
+  }
+}
+
+@keyframes hazard-stripes {
+  to {
+    background-position: 44px 0;
+  }
+}
+
 .blink {
   animation: blink 1.5s step-end infinite;
 }
@@ -123,11 +250,93 @@
 .sweep {
   animation: sweep 900ms linear infinite;
 }
+.jolt {
+  animation: jolt 300ms ease-in-out;
+}
+.alarm-flash {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: var(--color-blood);
+  mix-blend-mode: screen;
+  animation: alarm-flash 520ms ease-out;
+}
+.pop-rise {
+  animation: rise 850ms ease-out forwards;
+}
+.edge-glow {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 9;
+  animation: edge-glow 700ms ease-out forwards;
+  box-shadow:
+    inset 0 0 3px var(--color-acid),
+    inset 0 0 22px color-mix(in srgb, var(--color-acid) 55%, transparent),
+    inset 0 0 70px color-mix(in srgb, var(--color-acid) 20%, transparent);
+}
+.crit-flash {
+  animation: crit-flash 700ms steps(1, end) infinite;
+}
+.lost-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 20;
+  pointer-events: none;
+  background: #06040dee;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  animation: lost-in 1600ms ease-out forwards;
+}
+.lost-bars {
+  position: absolute;
+  inset: 0;
+  background: repeating-linear-gradient(
+    to bottom,
+    color-mix(in srgb, var(--color-blood) 13%, transparent) 0 2px,
+    transparent 2px 9px
+  );
+  animation: lost-bars 340ms linear infinite;
+}
+.lost-text {
+  animation: glitch 220ms steps(2, end) infinite;
+  text-align: center;
+}
+.hazard-bar {
+  position: absolute;
+  inset: 0 0 auto 0;
+  height: 34px;
+  overflow: hidden;
+  pointer-events: none;
+  animation: hazard-pulse 1.6s ease-in-out infinite;
+}
+.hazard-stripes {
+  position: absolute;
+  inset: 0;
+  opacity: 0.55;
+  background-image: repeating-linear-gradient(
+    115deg,
+    var(--color-flare) 0 10px,
+    transparent 10px 22px
+  );
+  animation: hazard-stripes 1.1s linear infinite;
+}
 
 @media (prefers-reduced-motion: reduce) {
   .blink,
   .breathe,
-  .sweep {
+  .sweep,
+  .jolt,
+  .alarm-flash,
+  .pop-rise,
+  .edge-glow,
+  .crit-flash,
+  .lost-overlay,
+  .lost-bars,
+  .lost-text,
+  .hazard-bar,
+  .hazard-stripes {
     animation: none;
   }
 }

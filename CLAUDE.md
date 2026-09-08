@@ -90,7 +90,15 @@ codebase — reference for interaction/copy only, don't import directly).
 
 ## Open questions (ask before deciding)
 
-- Is INTEG a real measured retention rate from `review_logs`, or flavor?
 - Should a miss in calm mode get any neutral acknowledgment, or nothing?
-- Start review: one deck at a time, or all due cards across every deck?
+  (currently: nothing)
 - Per-deck color: hardcoded or user-picked at creation?
+
+## Decided
+
+- **INTEG** is real: rolling % of the last 20 `review_logs` ratings that
+  weren't Again, computed client-side from a fetched window (see
+  `src/lib/integrity.ts`). Not decorative.
+- **Start review** loads all due cards across every deck, not one deck at a
+  time. Per-deck filtering can be added later without changing the queue
+  query shape.
