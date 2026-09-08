@@ -1,1 +1,133 @@
 @import "tailwindcss";
+
+/* ------------------------------------------------------------------
+   Palette — locked to the review-screen prototype (reference/srs-sync-screen-v3.jsx).
+   Amber (flare) is warnings only; blood is failure only.
+   ------------------------------------------------------------------ */
+@theme {
+  --color-void: #06040d;
+  --color-panel: #100b1c;
+  --color-plate: #181125;
+  --color-steel: #2e2545;
+  --color-bone: #dcf3ff;
+  --color-dim: #6e5f91;
+  --color-acid: #7cff3e;
+  --color-violet: #a46bff;
+  --color-cyan: #5ee9ff;
+  --color-flare: #ffb03a;
+  --color-blood: #ff3b5c;
+
+  --font-mono: ui-monospace, SFMono-Regular, Menlo, monospace;
+}
+
+@layer base {
+  html {
+    color-scheme: dark;
+    background: var(--color-void);
+  }
+
+  body {
+    margin: 0;
+    min-height: 100dvh;
+    background: var(--color-void);
+    color: var(--color-bone);
+    font-family: var(--font-mono);
+    -webkit-font-smoothing: antialiased;
+  }
+
+  :focus-visible {
+    outline: 2px solid var(--color-bone);
+    outline-offset: 3px;
+  }
+
+  /* The terminal look: no rounded anything, no browser autofill wash. */
+  input:-webkit-autofill,
+  input:-webkit-autofill:focus {
+    -webkit-text-fill-color: var(--color-bone);
+    -webkit-box-shadow: 0 0 0 1000px var(--color-plate) inset;
+    caret-color: var(--color-bone);
+  }
+}
+
+@layer components {
+  /* Cut corner, top-right + bottom-left — the prototype's button silhouette. */
+  .notch {
+    clip-path: polygon(
+      0 0,
+      calc(100% - 10px) 0,
+      100% 10px,
+      100% 100%,
+      10px 100%,
+      0 calc(100% - 10px)
+    );
+  }
+
+  .scanlines {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    background: repeating-linear-gradient(
+      to bottom,
+      #ffffff06 0 1px,
+      transparent 1px 3px
+    );
+  }
+
+  .gridfield {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    background-image: linear-gradient(#a46bff12 1px, transparent 1px),
+      linear-gradient(90deg, #a46bff12 1px, transparent 1px);
+    background-size: 32px 32px;
+    mask-image: radial-gradient(ellipse at 50% 38%, #000 18%, transparent 74%);
+  }
+}
+
+@keyframes blink {
+  0%,
+  49% {
+    opacity: 1;
+  }
+  50%,
+  100% {
+    opacity: 0.2;
+  }
+}
+
+@keyframes breathe {
+  0%,
+  100% {
+    opacity: 0.35;
+  }
+  50% {
+    opacity: 0.9;
+  }
+}
+
+@keyframes sweep {
+  0% {
+    transform: translateX(-100%);
+  }
+  100% {
+    transform: translateX(400%);
+  }
+}
+
+.blink {
+  animation: blink 1.5s step-end infinite;
+}
+.breathe {
+  animation: breathe 3.4s ease-in-out infinite;
+}
+.sweep {
+  animation: sweep 900ms linear infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .blink,
+  .breathe,
+  .sweep {
+    animation: none;
+  }
+}

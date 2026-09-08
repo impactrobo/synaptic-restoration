@@ -1,122 +1,93 @@
-import { useState } from 'react'
-import heroImg from './assets/hero.png'
-import reactLogo from './assets/react.svg'
-import viteLogo from './assets/vite.svg'
-import './App.css'
+import { useEffect, useState } from 'react'
+import AuthScreen from './components/AuthScreen'
+import { useSession } from './hooks/useSession'
+import { countDueCards } from './lib/reviews'
+import { supabase } from './lib/supabase'
 
-function App() {
-  const [count, setCount] = useState(0)
-
+function Booting() {
   return (
-    <>
-      <section id="center">
-        <div className="hero">
-          <img src={heroImg} className="base" width="170" height="179" alt="" />
-          <img src={reactLogo} className="framework" alt="React logo" />
-          <img src={viteLogo} className="vite" alt="Vite logo" />
-        </div>
-        <div>
-          <h1>Get started</h1>
-          <p>
-            Edit <code>src/App.tsx</code> and save to test <code>HMR</code>
-          </p>
-        </div>
-        <button
-          type="button"
-          className="counter"
-          onClick={() => setCount((count) => count + 1)}
-        >
-          Count is {count}
-        </button>
-      </section>
-
-      <div className="ticks"></div>
-
-      <section id="next-steps">
-        <div id="docs">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#documentation-icon"></use>
-          </svg>
-          <h2>Documentation</h2>
-          <p>Your questions, answered</p>
-          <ul>
-            <li>
-              <a href="https://vite.dev/" target="_blank">
-                <img className="logo" src={viteLogo} alt="" />
-                Explore Vite
-              </a>
-            </li>
-            <li>
-              <a href="https://react.dev/" target="_blank">
-                <img className="button-icon" src={reactLogo} alt="" />
-                Learn more
-              </a>
-            </li>
-          </ul>
-        </div>
-        <div id="social">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#social-icon"></use>
-          </svg>
-          <h2>Connect with us</h2>
-          <p>Join the Vite community</p>
-          <ul>
-            <li>
-              <a href="https://github.com/vitejs/vite" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#github-icon"></use>
-                </svg>
-                GitHub
-              </a>
-            </li>
-            <li>
-              <a href="https://chat.vite.dev/" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#discord-icon"></use>
-                </svg>
-                Discord
-              </a>
-            </li>
-            <li>
-              <a href="https://x.com/vite_js" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#x-icon"></use>
-                </svg>
-                X.com
-              </a>
-            </li>
-            <li>
-              <a href="https://bsky.app/profile/vite.dev" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#bluesky-icon"></use>
-                </svg>
-                Bluesky
-              </a>
-            </li>
-          </ul>
-        </div>
-      </section>
-
-      <div className="ticks"></div>
-      <section id="spacer"></section>
-    </>
+    <div className="relative flex min-h-dvh items-center justify-center overflow-hidden bg-void">
+      <div className="scanlines" />
+      <div className="breathe text-[10px] tracking-[0.4em] text-violet">
+        RESTORING LINK...
+      </div>
+    </div>
   )
 }
 
-export default App
+/** QUEUE readout — first live read through RLS, and a smoke test for the schema. */
+function Queue() {
+  const [state, setState] = useState<
+    { kind: 'loading' } | { kind: 'ok'; due: number } | { kind: 'err'; message: string }
+  >({ kind: 'loading' })
+
+  useEffect(() => {
+    let active = true
+    countDueCards()
+      .then((due) => active && setState({ kind: 'ok', due }))
+      .catch((error: Error) => active && setState({ kind: 'err', message: error.message }))
+    return () => {
+      active = false
+    }
+  }, [])
+
+  return (
+    <div className="mt-3 border border-steel border-t-2 border-t-cyan bg-panel px-3 py-2">
+      <div className="text-[9px] tracking-[0.2em] text-dim">QUEUE</div>
+      {state.kind === 'err' ? (
+        <div className="mt-0.5 text-[10px] leading-relaxed tracking-[0.1em] text-blood">
+          {state.message}
+        </div>
+      ) : (
+        <div className="text-[23px] font-bold leading-tight text-cyan">
+          {state.kind === 'loading' ? '---' : String(state.due).padStart(3, '0')}
+        </div>
+      )}
+    </div>
+  )
+}
+
+export default function App() {
+  const { session, loading, urlError } = useSession()
+
+  if (loading) return <Booting />
+  if (!session) return <AuthScreen urlError={urlError} />
+
+  // Placeholder shell — the home/title screen and review screen land here next.
+  return (
+    <div className="relative min-h-dvh overflow-hidden bg-void px-4 py-5">
+      <div className="gridfield" />
+      <div className="scanlines" />
+
+      <div className="relative mx-auto max-w-[420px]">
+        <header className="flex justify-between text-[9px] tracking-[0.18em] text-dim">
+          <span>
+            <span className="blink text-acid">●</span> LINK STABLE
+          </span>
+          <span>SRS v0.1.0 // NODE-01</span>
+        </header>
+
+        <div className="mt-8 border border-steel border-l-[3px] border-l-acid bg-panel p-4">
+          <div className="text-[9px] tracking-[0.3em] text-acid">OPERATOR ONLINE</div>
+          <div className="mt-2 break-all text-sm tracking-[0.08em] text-bone">
+            {session.user.email ?? session.user.id}
+          </div>
+          <div className="mt-3 text-[10px] leading-relaxed tracking-[0.12em] text-dim">
+            AUTH LAYER ACTIVE. SCHEDULER ONLINE. SYNC SCREEN PENDING.
+          </div>
+        </div>
+
+        <Queue />
+
+        <button
+          type="button"
+          onClick={() => supabase.auth.signOut()}
+          className="notch mt-4 flex w-full items-center justify-between border-2 border-steel bg-plate px-4 py-3 transition-transform duration-100 active:translate-x-1"
+        >
+          <span className="text-sm font-bold tracking-[0.22em] text-dim">DISCONNECT</span>
+          <span className="text-[9px] tracking-[0.15em] text-steel">SIGN OUT</span>
+        </button>
+      </div>
+    </div>
+  )
+}
